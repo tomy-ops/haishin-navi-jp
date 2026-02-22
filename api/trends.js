@@ -3,8 +3,7 @@ const parser = new Parser();
 
 module.exports = async (req, res) => {
   try {
-    const url =
-      "https://trends.google.com/trends/trendingsearches/daily/rss?geo=JP&hl=ja&pn=p4";
+    const url = "https://trends.google.com/trends/trendingsearches/realtime/rss?geo=JP&hl=ja";
 
     const feed = await parser.parseURL(url);
 
