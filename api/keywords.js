@@ -22,24 +22,16 @@ async function fetchTmdbTitles() {
 }
 
 function expandKeywords(title) {
-  // 作品名は「」で囲うと読みやすく、検索意図も分かりやすい
-  // ただし検索クエリとしては囲わない方が一般的なので囲いなしで作る
   const base = title.trim();
 
-  const patterns = [
-    `${base} 配信`,
-    `${base} どこで見れる`,
+  // 1記事で答えるべき検索意図（作品ページの柱）
+  return [
+    `${base} 配信 どこで見れる`,
     `${base} 見逃し配信`,
     `${base} サブスク`,
     `${base} 無料`,
-    `${base} Netflix`,
-    `${base} Amazonプライム`,
-    `${base} U-NEXT`,
-    `${base} DMM TV`,
+    `${base} 配信サービス 比較`,
   ];
-
-  // 重複除去
-  return Array.from(new Set(patterns));
 }
 
 module.exports = async (req, res) => {
