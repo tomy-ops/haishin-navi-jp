@@ -13,6 +13,40 @@ function slugifyJP(title) {
     .slice(0, 120);
 }
 
+async function postToWordPress({ title, html, slug }) {
+  const url = process.env.WP_URL;
+  const user = process.env.WP_USER;
+  const pass = process.env.WP_APP_PASSWORD;
+
+  if (!url || !user || !pass) {
+    return { skipped: true, reason: "wp_env_missing" };
+  }
+
+  const token = Buffer.from(`${user}:${pass}`).toString("base64");
+
+  const res = await fetch(`${url}/wp-json/wp/v2/posts`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title,
+      content: html,
+      status: "publish",
+      slug,
+    }),
+  });
+
+  const text = await res.text();
+
+  return {
+    ok: res.ok,
+    status: res.status,
+    bodyHead: text.slice(0, 300),
+  };
+}
+
 async function fetchTmdbTitles() {
   const key = process.env.TMDB_API_KEY;
   if (!key) throw new Error("TMDB_API_KEY is not set");
