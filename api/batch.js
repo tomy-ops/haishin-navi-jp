@@ -191,7 +191,8 @@ module.exports = async (req, res) => {
       const ai = await callOpenAI({ title });
       const html = renderHtml({ title, ai });
       const saved = await supabaseUpsert({ title, html });
-      results.push({ title, ...saved });
+      const wpResult = await postToWordPress({ title, html, slug: saved.slug });
+      results.push({ title, ...saved, wp: wpResult });
     }
 
     res.status(200).json({ count: results.length, results });
