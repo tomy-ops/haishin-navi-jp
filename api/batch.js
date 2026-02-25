@@ -34,7 +34,6 @@ async function postToWordPress({ title, html, slug }) {
       title,
       content: html,
       status: "publish",
-      slug,
     }),
   });
 
