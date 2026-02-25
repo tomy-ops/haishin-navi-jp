@@ -1,6 +1,6 @@
 ﻿export default async function handler(req, res) {
   try {
-    const base = process.env.WP_BASE_URL;
+    const base = process.env.WP_URL;
     const user = process.env.WP_USER;
     const pass = process.env.WP_APP_PASSWORD;
 
