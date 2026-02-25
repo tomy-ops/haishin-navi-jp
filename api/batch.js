@@ -14,14 +14,15 @@ function slugifyJP(title) {
 }
 
 async function postToWordPress({ title, html, slug }) {
-  const url = process.env.WP_URL;
-  const user = process.env.WP_USER;
-  const pass = process.env.WP_APP_PASSWORD;
+  const baseUrl = (process.env.WP_URL || process.env.WP_BASE_URL || "").trim();
+  const user = (process.env.WP_USER || "").trim();
+  const pass = (process.env.WP_APP_PASSWORD || "").trim();
 
-  if (!url || !user || !pass) {
-    return { skipped: true, reason: "wp_env_missing" };
+  if (!baseUrl || !user || !pass) {
+    return { skipped: true, reason: "wp_env_missing", base: !!baseUrl, user: !!user, pass: !!pass };
   }
 
+  const url = baseUrl.replace(/\/$/, ""); // 末尾スラッシュ除去
   const token = Buffer.from(`${user}:${pass}`).toString("base64");
 
   const res = await fetch(`${url}/wp-json/wp/v2/posts`, {
@@ -29,11 +30,13 @@ async function postToWordPress({ title, html, slug }) {
     headers: {
       Authorization: `Basic ${token}`,
       "Content-Type": "application/json",
+      "User-Agent": "haishin-navi-jp (vercel)",
     },
     body: JSON.stringify({
       title,
+      slug,          // ← slugを指定（重複などの挙動も追いやすい）
       content: html,
-      status: "publish",
+      status: "draft" // ←まずはdraft推奨（大量投稿でpublish連打すると弾かれやすい）
     }),
   });
 
