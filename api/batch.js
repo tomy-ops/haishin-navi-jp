@@ -180,25 +180,61 @@ async function supabaseUpsert({ title, html }) {
 
 module.exports = async (req, res) => {
   try {
-    // 誤爆防止：手動実行時は ?key=... を要求（後でCronでは別にする）
     const guard = process.env.BATCH_GUARD_KEY || "";
     if (guard && req.query.key !== guard) {
       return res.status(401).json({ error: "unauthorized" });
     }
 
+    const debug = {
+      step: "start",
+      env: {
+        tmdb: !!process.env.TMDB_API_KEY,
+        openai: !!process.env.OPENAI_API_KEY,
+        supabaseUrl: !!process.env.SUPABASE_URL,
+        supabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        publishUrl: !!process.env.STREAMPRESS_PUBLISH_URL,
+        publishKey: !!process.env.STREAMPRESS_PUBLISH_KEY,
+      },
+    };
+
+    debug.step = "fetchTmdbTitles";
     const titles = await fetchTmdbTitles();
+    debug.titlesCount = titles.length;
+    debug.firstTitle = titles[0] || null;
+
     const results = [];
 
-    for (const title of titles) {
+    for (const title of titles.slice(0, 1)) {
+      debug.currentTitle = title;
+
+      debug.step = "callOpenAI";
       const ai = await callOpenAI({ title });
+
+      debug.step = "renderHtml";
       const html = renderHtml({ title, ai });
+
+      debug.step = "supabaseUpsert";
       const saved = await supabaseUpsert({ title, html });
-      const wpResult = await postToWordPress({ title, html, slug: saved.slug });
+
+      let wpResult = { skipped: true, reason: "not_saved_to_supabase" };
+      if (saved.saved) {
+        debug.step = "postToWordPress";
+        wpResult = await postToWordPress({ title, html, slug: saved.slug });
+      }
+
       results.push({ title, ...saved, wp: wpResult });
     }
 
-    res.status(200).json({ count: results.length, results });
+    return res.status(200).json({
+      ok: true,
+      debug,
+      results,
+    });
   } catch (err) {
-    res.status(500).json({ error: "batch_failed", message: err?.message || String(err) });
+    return res.status(500).json({
+      error: "batch_failed",
+      message: err?.message || String(err),
+      stack: err?.stack || null,
+    });
   }
 };
