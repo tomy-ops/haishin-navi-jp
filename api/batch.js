@@ -14,29 +14,29 @@ function slugifyJP(title) {
 }
 
 async function postToWordPress({ title, html, slug }) {
-  const baseUrl = (process.env.WP_URL || process.env.WP_BASE_URL || "").trim();
-  const user = (process.env.WP_USER || "").trim();
-  const pass = (process.env.WP_APP_PASSWORD || "").trim();
+  const url = (process.env.STREAMPRESS_PUBLISH_URL || "").trim();
+  const key = (process.env.STREAMPRESS_PUBLISH_KEY || "").trim();
 
-  if (!baseUrl || !user || !pass) {
-    return { skipped: true, reason: "wp_env_missing", base: !!baseUrl, user: !!user, pass: !!pass };
+  if (!url || !key) {
+    return {
+      skipped: true,
+      reason: "streampress_env_missing",
+      url: !!url,
+      key: !!key,
+    };
   }
 
-  const url = baseUrl.replace(/\/$/, ""); // 末尾スラッシュ除去
-  const token = Buffer.from(`${user}:${pass}`).toString("base64");
-
-  const res = await fetch(`${url}/wp-json/wp/v2/posts`, {
+  const res = await fetch(url, {
     method: "POST",
     headers: {
-      Authorization: `Basic ${token}`,
+      "x-streampress-key": key,
       "Content-Type": "application/json",
-      "User-Agent": "haishin-navi-jp (vercel)",
     },
     body: JSON.stringify({
       title,
-      slug,          // ← slugを指定（重複などの挙動も追いやすい）
       content: html,
-      status: "draft" // ←まずはdraft推奨（大量投稿でpublish連打すると弾かれやすい）
+      status: "draft",
+      slug,
     }),
   });
 
