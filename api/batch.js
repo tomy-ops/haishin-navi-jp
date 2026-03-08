@@ -205,7 +205,7 @@ module.exports = async (req, res) => {
 
     const results = [];
 
-    for (const title of titles.slice(0, 1)) {
+    for (const title of titles.slice(0, 3)) {
       debug.currentTitle = title;
 
       debug.step = "callOpenAI";
