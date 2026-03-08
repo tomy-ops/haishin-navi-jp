@@ -214,14 +214,15 @@ module.exports = async (req, res) => {
       debug.step = "renderHtml";
       const html = renderHtml({ title, ai });
 
-      const saved = {
-      saved: true,
-      slug: slugifyJP(title),
-      reason: "supabase_skipped_temporarily",
-      };
+      debug.step = "supabaseUpsert";
+      const saved = await supabaseUpsert({ title, html });
 
-      debug.step = "postToWordPress";
-      const wpResult = await postToWordPress({ title, html, slug: saved.slug });
+      let wpResult = { skipped: true, reason: "duplicate_skip_wp" };
+
+      if (saved.saved) {
+        debug.step = "postToWordPress";
+        wpResult = await postToWordPress({ title, html, slug: saved.slug });
+      }
 
       results.push({ title, ...saved, wp: wpResult });
     }
