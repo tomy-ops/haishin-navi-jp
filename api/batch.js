@@ -33,6 +33,7 @@ async function postToWordPress({ title, html, slug }) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
+      key,
       title,
       content: html,
       status: "draft",
