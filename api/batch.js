@@ -13,7 +13,7 @@ function slugifyJP(title) {
     .slice(0, 120);
 }
 
-async function postToWordPress({ title, html, slug }) {
+async function postToWordPress({ title, html, slug, poster, categories }) {
   const url = (process.env.STREAMPRESS_PUBLISH_URL || "").trim();
   const key = (process.env.STREAMPRESS_PUBLISH_KEY || "").trim();
 
@@ -38,6 +38,8 @@ async function postToWordPress({ title, html, slug }) {
       content: html,
       status: "draft",
       slug,
+      featured_image_url: poster || null,
+      categories: categories || [],
     }),
   });
 
@@ -64,10 +66,32 @@ async function fetchTmdbTitles() {
   const tvJson = await tvRes.json();
   const movieJson = await movieRes.json();
 
-  const tvTitles = (tvJson.results || []).map((x) => x.name).filter(Boolean);
-  const movieTitles = (movieJson.results || []).map((x) => x.title).filter(Boolean);
+  const tvItems = (tvJson.results || [])
+    .filter((x) => x.name)
+    .map((x) => ({
+      title: x.name,
+      mediaType: "tv",
+    }));
 
-  return Array.from(new Set([...tvTitles, ...movieTitles])).slice(0, 10); // まずは10件で安全運用
+  const movieItems = (movieJson.results || [])
+    .filter((x) => x.title)
+    .map((x) => ({
+      title: x.title,
+      mediaType: "movie",
+    }));
+
+  const merged = [...tvItems, ...movieItems];
+
+  const unique = [];
+  const seen = new Set();
+
+  for (const item of merged) {
+    if (seen.has(item.title)) continue;
+    seen.add(item.title);
+    unique.push(item);
+  }
+
+  return unique.slice(0, 10);
 }
 
 async function callOpenAI({ title }) {
@@ -113,9 +137,7 @@ async function callOpenAI({ title }) {
 
   const data = await r.json();
   const jsonText = data.output?.[0]?.content?.[0]?.text || data.output_text;
-  return JSON.parse(jsonText);
-
-  
+  return JSON.parse(jsonText);  
 }
 async function fetchTmdbPoster(title) {
   const key = process.env.TMDB_API_KEY;
@@ -132,6 +154,24 @@ async function fetchTmdbPoster(title) {
   if (!poster) return null;
 
   return `https://image.tmdb.org/t/p/w500${poster}`;
+}
+
+function detectCategories({ title, mediaType }) {
+  const categories = ["配信どこ"];
+
+  if (mediaType === "movie") {
+    categories.push("映画");
+  }
+
+  if (mediaType === "tv") {
+    categories.push("海外ドラマ");
+  }
+
+  if (/アニメ|プリキュア|ガンダム|ポケモン|ドラゴンボール|ワンピース|名探偵コナン/i.test(title)) {
+    categories.push("アニメ");
+  }
+
+  return Array.from(new Set(categories));
 }
 
 function renderHtml({ title, ai, poster }) {
@@ -291,13 +331,16 @@ module.exports = async (req, res) => {
     };
 
     debug.step = "fetchTmdbTitles";
-    const titles = ["アバター"];
+    const titles = await fetchTmdbTitles();
     debug.titlesCount = titles.length;
     debug.firstTitle = titles[0] || null;
 
     const results = [];
 
-    for (const title of titles.slice(0, 5)) {
+    for (const item of titles.slice(0, 5)) {
+      const title = item.title;
+      const mediaType = item.mediaType;
+
       debug.currentTitle = title;
 
       debug.step = "callOpenAI";
@@ -305,6 +348,8 @@ module.exports = async (req, res) => {
 
       debug.step = "fetchTmdbPoster";
       const poster = await fetchTmdbPoster(title);
+
+      const categories = detectCategories({ title, mediaType });
 
       debug.step = "renderHtml";
       const html = renderHtml({ title, ai, poster });
@@ -316,10 +361,16 @@ module.exports = async (req, res) => {
 
       if (saved.saved) {
         debug.step = "postToWordPress";
-        wpResult = await postToWordPress({ title, html, slug: saved.slug });
+        wpResult = await postToWordPress({
+          title,
+          html,
+          slug: saved.slug,
+          poster,
+          categories,
+        });
       }
 
-      results.push({ title, ...saved, poster, wp: wpResult });
+      results.push({ title, mediaType, categories, ...saved, poster, wp: wpResult });
     }
 
     return res.status(200).json({
