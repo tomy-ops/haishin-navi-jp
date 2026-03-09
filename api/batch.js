@@ -291,7 +291,7 @@ module.exports = async (req, res) => {
     };
 
     debug.step = "fetchTmdbTitles";
-    const titles = await fetchTmdbTitles();
+    const titles = ["アバター"];
     debug.titlesCount = titles.length;
     debug.firstTitle = titles[0] || null;
 
