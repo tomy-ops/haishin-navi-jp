@@ -333,7 +333,7 @@ module.exports = async (req, res) => {
     debug.step = "fetchTmdbTitles";
     const titles = await fetchTmdbTitles();
     debug.titlesCount = titles.length;
-    debug.firstTitle = titles[0] || null;
+    debug.firstTitle = titles[0]?.title || null;
 
     const results = [];
 
