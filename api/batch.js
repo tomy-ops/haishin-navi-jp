@@ -114,52 +114,131 @@ async function callOpenAI({ title }) {
   const data = await r.json();
   const jsonText = data.output?.[0]?.content?.[0]?.text || data.output_text;
   return JSON.parse(jsonText);
+
+  
+}
+async function fetchTmdbPoster(title) {
+  const key = process.env.TMDB_API_KEY;
+  if (!key) return null;
+
+  const url = `https://api.themoviedb.org/3/search/multi?api_key=${key}&query=${encodeURIComponent(title)}&language=ja-JP`;
+
+  const r = await fetch(url);
+  if (!r.ok) return null;
+
+  const j = await r.json();
+  const poster = j.results?.[0]?.poster_path;
+
+  if (!poster) return null;
+
+  return `https://image.tmdb.org/t/p/w500${poster}`;
 }
 
-function renderHtml({ title, ai }) {
+function renderHtml({ title, ai, poster }) {
   return `
-<!doctype html><html lang="ja"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</title>
-</head><body><main style="max-width:760px;margin:24px auto;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;">
-<h1>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</h1>
-<p>${ai.lead}</p>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</title>
+  <meta name="description" content="${title}の配信はどこで見れるのか気になる方向けに、見逃し配信・サブスク・無料視聴の考え方をわかりやすく整理しました。最新の配信状況を確認するポイントも紹介します。" />
+</head>
+<body>
+  <main style="max-width:760px;margin:24px auto;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.9;padding:0 16px;">
 
-<h2>まず結論：配信状況は公式で確認するのが確実</h2>
-<ul><li>配信ラインナップは変わるため、各サービスの公式検索で確認する</li>
-<li>無料体験の有無や条件も、公式の最新情報を確認する</li></ul>
+    ${poster ? `<img src="${poster}" alt="${title}" style="width:100%;max-width:420px;display:block;margin:0 auto 24px;border-radius:12px;">` : ""}
 
-<h2>『${title}』の見どころ</h2>
-<ul>${ai.highlights.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <h1>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</h1>
 
-<h2>こんな人におすすめ</h2>
-<ul>${ai.recommendedFor.map(x=>`<li>${x}</li>`).join("")}</ul>
+    <p>${ai.lead}</p>
 
-<h2>配信サービスを選ぶポイント</h2>
-<ol><li>見たい作品が多いか</li><li>月額料金と無料体験の条件</li><li>画質・同時視聴・ダウンロード</li><li>字幕/吹替・対応端末</li></ol>
+    <h2>まず結論：配信状況は公式で確認するのが確実</h2>
+    <ul>
+      <li>配信ラインナップは変わるため、各サービスの公式検索で確認する</li>
+      <li>無料体験の有無や条件も、公式の最新情報を確認する</li>
+      <li>字幕・吹替・見逃し配信の対象かどうかもあわせて確認する</li>
+    </ul>
 
-<h2>よくある質問</h2>
-<h3>Q. 『${title}』は無料で見れますか？</h3>
-<p>A. 無料体験があっても対象外の場合があります。公式で対象作品か確認してください。</p>
+    <h2>${title}の見どころ</h2>
+    <ul>
+      ${ai.highlights.map(x => `<li>${x}</li>`).join("")}
+    </ul>
 
-<h2>配信状況を確認したい方へ</h2>
-<p>
-  配信作品や無料体験の条件は変更されることがあります。
-  最新の配信状況は、各動画配信サービスの公式ページで確認するのが確実です。
-</p>
+    <h2>こんな人におすすめ</h2>
+    <ul>
+      ${ai.recommendedFor.map(x => `<li>${x}</li>`).join("")}
+    </ul>
 
-<h2>サービス選びで迷ったら</h2>
-<ul>
-  <li>映画やドラマを幅広く見たい人は作品数を重視</li>
-  <li>無料体験を重視する人は対象条件を確認</li>
-  <li>家族で使いたい人は同時視聴台数もチェック</li>
-</ul>
+    <h2>配信サービスを選ぶポイント</h2>
+    <ol>
+      <li>見たい作品が多いか</li>
+      <li>月額料金と無料体験の条件</li>
+      <li>画質・同時視聴・ダウンロードの可否</li>
+      <li>字幕・吹替・対応端末が合っているか</li>
+    </ol>
 
-<h2>注意点</h2>
-<p>${ai.caution}</p>
+    <h2>見逃し配信や無料視聴を探すときの注意点</h2>
+    <p>
+      「無料で見れる」「見逃し配信がある」と書かれていても、時期やキャンペーン条件によって対象外になることがあります。
+      登録前に、対象作品かどうか、無料体験の対象条件、視聴期限の有無を確認しておくと安心です。
+    </p>
 
-<hr/><p style="font-size:12px;opacity:.75;">※当ページは配信可否を保証しません。最新は公式をご確認ください。</p>
-</main></body></html>
+    <h2>よくある質問</h2>
+
+    <h3>Q. ${title}は無料で見れますか？</h3>
+    <p>
+      A. 無料体験があるサービスでも、対象外の場合があります。必ず公式で対象作品か確認してください。
+    </p>
+
+    <h3>Q. ${title}の見逃し配信を見たいときは？</h3>
+    <p>
+      A. 見逃し配信は期間限定の場合があります。作品名で検索し、最新の配信状況を公式ページで確認するのが確実です。
+    </p>
+
+    <h3>Q. どのサブスクを選べばいいですか？</h3>
+    <p>
+      A. まずは${title}を視聴できるかを確認し、そのうえで月額料金、無料体験、画質、同時視聴のしやすさを比較するのがおすすめです。
+    </p>
+
+    <h2>配信状況を確認したい方へ</h2>
+    <p>
+      ${title}の配信状況は、時期やキャンペーンによって変更されることがあります。
+      見逃し配信や無料体験の対象になる場合もあるため、最新の配信情報は公式ページで確認するのがおすすめです。
+    </p>
+
+    <p>
+      特に動画配信サービスでは、無料体験の期間中に視聴できる作品が多くあります。
+      まずは公式ページで現在の配信状況をチェックしてみてください。
+    </p>
+
+    <ul>
+      <li><a href="U-NEXTリンク" target="_blank" rel="nofollow sponsored">U-NEXT公式はこちら</a></li>
+      <li><a href="DMMTVリンク" target="_blank" rel="nofollow sponsored">DMM TV公式はこちら</a></li>
+      <li><a href="Huluリンク" target="_blank" rel="nofollow sponsored">Hulu公式はこちら</a></li>
+    </ul>
+
+    <p>
+      ※配信作品や無料体験の条件は変更されることがあります。最新情報は各サービスの公式サイトでご確認ください。
+    </p>
+
+    <h2>サービス選びで迷ったら</h2>
+    <ul>
+      <li>映画やドラマを幅広く見たい人は作品数を重視</li>
+      <li>無料体験を重視する人は対象条件を確認</li>
+      <li>家族で使いたい人は同時視聴台数もチェック</li>
+    </ul>
+
+    <h2>注意点</h2>
+    <p>${ai.caution}</p>
+
+    <hr />
+    <p style="font-size:12px;opacity:.75;">
+      ※当ページは配信可否を保証するものではありません。最新の配信状況は各サービスの公式情報をご確認ください。
+    </p>
+  </main>
+</body>
+</html>
 `.trim();
 }
 
@@ -218,14 +297,17 @@ module.exports = async (req, res) => {
 
     const results = [];
 
-    for (const title of titles.slice(0, 3)) {
+    for (const title of titles.slice(0, 5)) {
       debug.currentTitle = title;
 
       debug.step = "callOpenAI";
       const ai = await callOpenAI({ title });
 
+      debug.step = "fetchTmdbPoster";
+      const poster = await fetchTmdbPoster(title);
+
       debug.step = "renderHtml";
-      const html = renderHtml({ title, ai });
+      const html = renderHtml({ title, ai, poster });
 
       debug.step = "supabaseUpsert";
       const saved = await supabaseUpsert({ title, html });
@@ -237,7 +319,7 @@ module.exports = async (req, res) => {
         wpResult = await postToWordPress({ title, html, slug: saved.slug });
       }
 
-      results.push({ title, ...saved, wp: wpResult });
+      results.push({ title, ...saved, poster, wp: wpResult });
     }
 
     return res.status(200).json({
