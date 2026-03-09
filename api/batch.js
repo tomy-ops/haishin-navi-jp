@@ -120,9 +120,9 @@ function renderHtml({ title, ai }) {
   return `
 <!doctype html><html lang="ja"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>${title}はどこで見れる？配信サービス比較と無料視聴の考え方</title>
+<title>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</title>
 </head><body><main style="max-width:760px;margin:24px auto;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;">
-<h1>『${title}』はどこで見れる？配信サービス比較と無料視聴の考え方</h1>
+<h1>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</h1>
 <p>${ai.lead}</p>
 
 <h2>まず結論：配信状況は公式で確認するのが確実</h2>
@@ -141,6 +141,19 @@ function renderHtml({ title, ai }) {
 <h2>よくある質問</h2>
 <h3>Q. 『${title}』は無料で見れますか？</h3>
 <p>A. 無料体験があっても対象外の場合があります。公式で対象作品か確認してください。</p>
+
+<h2>配信状況を確認したい方へ</h2>
+<p>
+  配信作品や無料体験の条件は変更されることがあります。
+  最新の配信状況は、各動画配信サービスの公式ページで確認するのが確実です。
+</p>
+
+<h2>サービス選びで迷ったら</h2>
+<ul>
+  <li>映画やドラマを幅広く見たい人は作品数を重視</li>
+  <li>無料体験を重視する人は対象条件を確認</li>
+  <li>家族で使いたい人は同時視聴台数もチェック</li>
+</ul>
 
 <h2>注意点</h2>
 <p>${ai.caution}</p>
