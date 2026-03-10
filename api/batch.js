@@ -331,13 +331,15 @@ module.exports = async (req, res) => {
     };
 
     debug.step = "fetchTmdbTitles";
-    const titles = await fetchTmdbTitles();
+    const titles = [
+      { title: "アバター：ウェイ・オブ・ウォーター", mediaType: "movie" }
+    ];
     debug.titlesCount = titles.length;
     debug.firstTitle = titles[0]?.title || null;
 
     const results = [];
 
-    for (const item of titles.slice(0, 5)) {
+    for (const item of titles.slice(0, 1)) {
       const title = item.title;
       const mediaType = item.mediaType;
 
