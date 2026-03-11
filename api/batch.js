@@ -253,9 +253,12 @@ function renderHtml({ title, ai, poster }) {
     </p>
 
     <ul>
-      <li><a href="U-NEXTリンク" target="_blank" rel="nofollow sponsored">U-NEXT公式はこちら</a></li>
-      <li><a href="DMMTVリンク" target="_blank" rel="nofollow sponsored">DMM TV公式はこちら</a></li>
-      <li><a href="Huluリンク" target="_blank" rel="nofollow sponsored">Hulu公式はこちら</a></li>
+      <li><a href="${affiliateLinks.unext}" target="_blank" rel="nofollow sponsored">U-NEXT公式はこちら</a></li>
+      <li><a href="${affiliateLinks.dmmtv}" target="_blank" rel="nofollow sponsored">DMM TV公式はこちら</a></li>
+      <li><a href="${affiliateLinks.hulu}" target="_blank" rel="nofollow sponsored">Hulu公式はこちら</a></li>
+      <li><a href="${affiliateLinks.abema}" target="_blank" rel="nofollow sponsored">ABEMA公式はこちら</a></li>
+      <li><a href="${affiliateLinks.prime}" target="_blank" rel="nofollow sponsored">Amazon Prime Videoはこちら</a></li>
+      <li><a href="${affiliateLinks.dazn}" target="_blank" rel="nofollow sponsored">DAZNはこちら</a></li>
     </ul>
 
     <p>
@@ -331,11 +334,9 @@ module.exports = async (req, res) => {
     };
 
     debug.step = "fetchTmdbTitles";
-    const titles = [
-      { title: "アバター：ウェイ・オブ・ウォーター", mediaType: "movie" }
-    ];
+    const titles = await fetchTmdbTitles();
     debug.titlesCount = titles.length;
-    debug.firstTitle = titles[0]?.title || null;
+    debug.firstTitle = titles[0] || null;
 
     const results = [];
 
