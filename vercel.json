@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/batch?key=HaishinNaviJP_Batch_2026_ProtectKey_7xKpL9mQa",
-      "schedule": "0 7 * * *"
+      "schedule": "0 23 * * *"
     }
   ]
 }
