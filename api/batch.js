@@ -3,7 +3,7 @@
 // 2) 作品ごとに記事HTMLを生成（OpenAI）
 // 3) Supabaseに保存（slug重複はスキップ）
 
-const affiliateLinks = require("../affiliateLinks");
+const affiliateLinks = require("../lib/affiliateLinks");
 
 function slugifyJP(title) {
   return title

@@ -1,5 +1,5 @@
 // api/generate.js
-const affiliateLinks = require("../affiliateLinks");
+const affiliateLinks = require("../lib/affiliateLinks");
 
 function slugifyJP(title) {
   return title
