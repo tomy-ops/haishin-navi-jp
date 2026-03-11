@@ -144,15 +144,66 @@ function renderHtml({ title, ai, poster }) {
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</title>
   <meta name="description" content="${title}の配信はどこで見れるのか気になる方向けに、見逃し配信・サブスク・無料視聴の考え方をわかりやすく整理しました。最新の配信状況を確認するポイントも紹介します。" />
+  <style>
+    .sp-wrap {
+      max-width: 760px;
+      margin: 24px auto;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.9;
+      padding: 0 16px;
+    }
+    .sp-poster {
+      width: 100%;
+      max-width: 420px;
+      display: block;
+      margin: 0 auto 24px;
+      border-radius: 12px;
+    }
+    .sp-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      margin: 16px 0 24px;
+    }
+    .sp-table th,
+    .sp-table td {
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
+    .sp-btn-wrap {
+      text-align: center;
+      margin: 20px 0 28px;
+    }
+    a.sp-btn,
+    a.sp-btn:visited {
+      display: inline-block;
+      padding: 14px 26px;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none !important;
+      line-height: 1.4;
+      border: none;
+      box-shadow: none;
+    }
+    a.sp-btn::before,
+    a.sp-btn::after {
+      content: none !important;
+      display: none !important;
+    }
+    a.sp-btn:hover {
+      opacity: 0.92;
+      text-decoration: none !important;
+    }
+    .sp-btn-unext { background: #e60023; color: #fff !important; }
+    .sp-btn-dmmtv { background: #ff6600; color: #fff !important; }
+    .sp-btn-hulu { background: #1ce783; color: #111 !important; }
+    .sp-btn-prime { background: #0073aa; color: #fff !important; }
+  </style>
 </head>
 <body>
-  <main style="max-width:760px;margin:24px auto;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.9;padding:0 16px;">
+  <main class="sp-wrap">
 
-    ${
-      poster
-        ? `<img src="${poster}" alt="${title}" style="width:100%;max-width:420px;display:block;margin:0 auto 24px;border-radius:12px;">`
-        : ""
-    }
+    ${poster ? `<img src="${poster}" alt="${title}" class="sp-poster">` : ""}
 
     <h1>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</h1>
 
@@ -165,18 +216,42 @@ function renderHtml({ title, ai, poster }) {
     </p>
 
     <h2>${title}を視聴できる可能性がある動画配信サービス</h2>
-    <table border="1" style="width:100%;border-collapse:collapse;text-align:center;">
+    <table class="sp-table">
       <tr>
         <th>サービス</th>
         <th>月額料金</th>
         <th>無料体験</th>
       </tr>
-      <tr><td>U-NEXT</td><td>2189円</td><td>31日</td></tr>
-      <tr><td>DMM TV</td><td>550円</td><td>30日</td></tr>
-      <tr><td>Hulu</td><td>1026円</td><td>なし</td></tr>
-      <tr><td>Amazon Prime Video</td><td>600円</td><td>30日</td></tr>
-      <tr><td>ABEMA</td><td>プランによる</td><td>なし</td></tr>
-      <tr><td>DAZN</td><td>プランによる</td><td>なし</td></tr>
+      <tr>
+        <td>U-NEXT</td>
+        <td>2189円</td>
+        <td>31日</td>
+      </tr>
+      <tr>
+        <td>DMM TV</td>
+        <td>550円</td>
+        <td>30日</td>
+      </tr>
+      <tr>
+        <td>Hulu</td>
+        <td>1026円</td>
+        <td>なし</td>
+      </tr>
+      <tr>
+        <td>Amazon Prime Video</td>
+        <td>600円</td>
+        <td>30日</td>
+      </tr>
+      <tr>
+        <td>ABEMA</td>
+        <td>プランによる</td>
+        <td>なし</td>
+      </tr>
+      <tr>
+        <td>DAZN</td>
+        <td>プランによる</td>
+        <td>なし</td>
+      </tr>
     </table>
 
     <h2>${title}を無料で見る方法</h2>
@@ -198,48 +273,44 @@ function renderHtml({ title, ai, poster }) {
       U-NEXTは見放題作品数が非常に多く、映画・ドラマ・アニメまで幅広いジャンルを楽しめる動画配信サービスです。
       作品数を重視したい方や、いろいろな作品をまとめて楽しみたい方に向いています。
     </p>
-    <p style="text-align:center;margin:20px 0;">
-      <a href="${affiliateLinks.unext}" target="_blank" rel="nofollow sponsored"
-      style="display:inline-block;background:#e60023;color:#fff;padding:14px 26px;border-radius:6px;font-weight:bold;text-decoration:none;">
-      U-NEXT公式サイトを見る
+    <div class="sp-btn-wrap">
+      <a href="${affiliateLinks.unext}" target="_blank" rel="nofollow sponsored noopener" class="sp-btn sp-btn-unext">
+        U-NEXT公式サイトを見る
       </a>
-    </p>
+    </div>
 
     <h3>DMM TV</h3>
     <p>
       DMM TVはコスパの良さが魅力の動画配信サービスです。
       とくにアニメ作品をよく見る方や、月額料金を抑えたい方に向いています。
     </p>
-    <p style="text-align:center;margin:20px 0;">
-      <a href="${affiliateLinks.dmmtv}" target="_blank" rel="nofollow sponsored"
-      style="display:inline-block;background:#ff6600;color:#fff;padding:14px 26px;border-radius:6px;font-weight:bold;text-decoration:none;">
-      DMM TV公式サイトを見る
+    <div class="sp-btn-wrap">
+      <a href="${affiliateLinks.dmmtv}" target="_blank" rel="nofollow sponsored noopener" class="sp-btn sp-btn-dmmtv">
+        DMM TV公式サイトを見る
       </a>
-    </p>
+    </div>
 
     <h3>Hulu</h3>
     <p>
       Huluは海外ドラマや国内ドラマが充実している動画配信サービスです。
       ドラマ中心で楽しみたい方や、見逃し配信も気になる方におすすめです。
     </p>
-    <p style="text-align:center;margin:20px 0;">
-      <a href="${affiliateLinks.hulu}" target="_blank" rel="nofollow sponsored"
-      style="display:inline-block;background:#1ce783;color:#000;padding:14px 26px;border-radius:6px;font-weight:bold;text-decoration:none;">
-      Hulu公式サイトを見る
+    <div class="sp-btn-wrap">
+      <a href="${affiliateLinks.hulu}" target="_blank" rel="nofollow sponsored noopener" class="sp-btn sp-btn-hulu">
+        Hulu公式サイトを見る
       </a>
-    </p>
+    </div>
 
     <h3>Amazon Prime Video</h3>
     <p>
       Amazon Prime Videoはコスパの良い動画配信サービスで、映画やドラマ、アニメも幅広く配信されています。
       できるだけ費用を抑えて楽しみたい方にも向いています。
     </p>
-    <p style="text-align:center;margin:20px 0;">
-      <a href="${affiliateLinks.prime}" target="_blank" rel="nofollow sponsored"
-      style="display:inline-block;background:#0073aa;color:#fff;padding:14px 26px;border-radius:6px;font-weight:bold;text-decoration:none;">
-      Prime Videoはこちら
+    <div class="sp-btn-wrap">
+      <a href="${affiliateLinks.prime}" target="_blank" rel="nofollow sponsored noopener" class="sp-btn sp-btn-prime">
+        Prime Videoはこちら
       </a>
-    </p>
+    </div>
 
     <h2>${title}の見どころ</h2>
     <ul>
