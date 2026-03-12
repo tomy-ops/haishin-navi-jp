@@ -189,6 +189,22 @@ function detectCategories({ title, mediaType }) {
   return Array.from(new Set(categories));
 }
 
+function renderWpButton(url, label, bgColor, textColor = "#ffffff") {
+  return `
+  <div class="wp-block-buttons is-layout-flex" style="justify-content:center;margin:24px 0;">
+    <div class="wp-block-button">
+      <a class="wp-block-button__link wp-element-button"
+         href="${url}"
+         target="_blank"
+         rel="nofollow sponsored noopener"
+         style="border-radius:6px;background-color:${bgColor};color:${textColor};text-decoration:none;">
+         ${label}
+      </a>
+    </div>
+  </div>
+  `;
+}
+
 function renderHtml({ title, ai, poster }) {
   return `
 <div style="max-width:760px;margin:24px auto;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.9;padding:0 16px;">
@@ -263,48 +279,56 @@ function renderHtml({ title, ai, poster }) {
     U-NEXTは見放題作品数が非常に多く、映画・ドラマ・アニメまで幅広いジャンルを楽しめる動画配信サービスです。
     作品数を重視したい方や、いろいろな作品をまとめて楽しみたい方に向いています。
   </p>
-  <p style="text-align:center;margin:24px 0;">
-    <a href="${affiliateLinks.unext}" target="_blank" rel="nofollow sponsored noopener"
-    style="display:inline-block;padding:14px 28px;background:#e60023;color:#fff;text-decoration:none;font-weight:bold;border:2px solid #b8001c;border-radius:6px;box-shadow:0 5px 0 #b8001c;">
-    U-NEXT公式サイトを見る
-    </a>
-  </p>
+  <div style="text-align:center;margin:24px 0;">
+    <form action="${affiliateLinks.unext}" method="get" target="_blank" style="display:inline;">
+      <button type="submit"
+      style="display:inline-block;padding:14px 28px;background:#e60023;color:#fff;border:2px solid #b8001c;border-radius:6px;box-shadow:0 5px 0 #b8001c;cursor:pointer;font-weight:bold;font-size:16px;line-height:1.4;">
+      U-NEXT公式サイトを見る
+      </button>
+    </form>
+  </div>
 
   <h3>DMM TV</h3>
   <p>
     DMM TVはコスパの良さが魅力の動画配信サービスです。
     とくにアニメ作品をよく見る方や、月額料金を抑えたい方に向いています。
   </p>
-  <p style="text-align:center;margin:24px 0;">
-    <a href="${affiliateLinks.dmmtv}" target="_blank" rel="nofollow sponsored noopener"
-    style="display:inline-block;padding:14px 28px;background:#ff6600;color:#fff;text-decoration:none;font-weight:bold;border:2px solid #cc5200;border-radius:6px;box-shadow:0 5px 0 #cc5200;">
-    DMM TV公式サイトを見る
-    </a>
-  </p>
+  <div style="text-align:center;margin:24px 0;">
+    <form action="${affiliateLinks.dmmtv}" method="get" target="_blank" style="display:inline;">
+      <button type="submit"
+      style="display:inline-block;padding:14px 28px;background:#ff6600;color:#fff;border:2px solid #cc5200;border-radius:6px;box-shadow:0 5px 0 #cc5200;cursor:pointer;font-weight:bold;font-size:16px;line-height:1.4;">
+      DMM TV公式サイトを見る
+      </button>
+    </form>
+  </div>
 
   <h3>Hulu</h3>
   <p>
     Huluは海外ドラマや国内ドラマが充実している動画配信サービスです。
     ドラマ中心で楽しみたい方や、見逃し配信も気になる方におすすめです。
   </p>
-  <p style="text-align:center;margin:24px 0;">
-    <a href="${affiliateLinks.hulu}" target="_blank" rel="nofollow sponsored noopener"
-    style="display:inline-block;padding:14px 28px;background:#1ce783;color:#111;text-decoration:none;font-weight:bold;border:2px solid #14b866;border-radius:6px;box-shadow:0 5px 0 #14b866;">
-    Hulu公式サイトを見る
-    </a>
-  </p>
+  <div style="text-align:center;margin:24px 0;">
+    <form action="${affiliateLinks.hulu}" method="get" target="_blank" style="display:inline;">
+      <button type="submit"
+      style="display:inline-block;padding:14px 28px;background:#1ce783;color:#111;border:2px solid #14b866;border-radius:6px;box-shadow:0 5px 0 #14b866;cursor:pointer;font-weight:bold;font-size:16px;line-height:1.4;">
+      Hulu公式サイトを見る
+      </button>
+    </form>
+  </div>
 
   <h3>Amazon Prime Video</h3>
   <p>
     Amazon Prime Videoはコスパの良い動画配信サービスで、映画やドラマ、アニメも幅広く配信されています。
     できるだけ費用を抑えて楽しみたい方にも向いています。
   </p>
-  <p style="text-align:center;margin:24px 0;">
-    <a href="${affiliateLinks.prime}" target="_blank" rel="nofollow sponsored noopener"
-    style="display:inline-block;padding:14px 28px;background:#0073aa;color:#fff;text-decoration:none;font-weight:bold;border:2px solid #005a84;border-radius:6px;box-shadow:0 5px 0 #005a84;">
-    Prime Videoはこちら
-    </a>
-  </p>
+  <div style="text-align:center;margin:24px 0;">
+    <form action="${affiliateLinks.prime}" method="get" target="_blank" style="display:inline;">
+      <button type="submit"
+      style="display:inline-block;padding:14px 28px;background:#0073aa;color:#fff;border:2px solid #005a84;border-radius:6px;box-shadow:0 5px 0 #005a84;cursor:pointer;font-weight:bold;font-size:16px;line-height:1.4;">
+      Prime Videoはこちら
+      </button>
+    </form>
+  </div>
 
   <h2>${title}の見どころ</h2>
   <ul>

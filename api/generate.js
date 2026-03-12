@@ -135,6 +135,22 @@ function detectCategories({ title, mediaType }) {
   return Array.from(new Set(categories));
 }
 
+function renderWpButton(url, label, bgColor, textColor = "#ffffff") {
+  return `
+  <div class="wp-block-buttons is-layout-flex" style="justify-content:center;margin:24px 0;">
+    <div class="wp-block-button">
+      <a class="wp-block-button__link wp-element-button"
+         href="${url}"
+         target="_blank"
+         rel="nofollow sponsored noopener"
+         style="border-radius:6px;background-color:${bgColor};color:${textColor};text-decoration:none;">
+         ${label}
+      </a>
+    </div>
+  </div>
+  `;
+}
+
 function renderHtml({ title, ai, poster }) {
   return `
 <div style="max-width:760px;margin:24px auto;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.9;padding:0 16px;">
