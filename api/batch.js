@@ -263,48 +263,64 @@ function renderHtml({ title, ai, poster }) {
     U-NEXTは見放題作品数が非常に多く、映画・ドラマ・アニメまで幅広いジャンルを楽しめる動画配信サービスです。
     作品数を重視したい方や、いろいろな作品をまとめて楽しみたい方に向いています。
   </p>
-  <p style="text-align:center;margin:20px 0 28px;">
-    <a href="${affiliateLinks.unext}" target="_blank" rel="nofollow sponsored noopener"
-    style="display:inline-block;padding:14px 26px;border-radius:8px;font-weight:700;text-decoration:none;background:#e60023;color:#fff;">
+  <div style="text-align:center;margin:24px 0;">
+    <button onclick="location.href='${affiliateLinks.unext}'"
+    style="padding:14px 28px;background:#e60023;color:#fff;border:2px solid #b8001c;border-radius:6px;box-shadow:0 5px 0 #b8001c;cursor:pointer;font-weight:bold;font-size:16px;transition:all 0.1s ease;"
+    onmouseover="this.style.transform='translateY(2px)'; this.style.boxShadow='0 3px 0 #b8001c';"
+    onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 5px 0 #b8001c';"
+    onmousedown="this.style.transform='translateY(5px)'; this.style.boxShadow='0px 0 #b8001c';"
+    onmouseup="this.style.transform='translateY(2px)'; this.style.boxShadow='0 3px 0 #b8001c';">
     U-NEXT公式サイトを見る
-    </a>
-  </p>
+    </button>
+  </div>
 
   <h3>DMM TV</h3>
   <p>
     DMM TVはコスパの良さが魅力の動画配信サービスです。
     とくにアニメ作品をよく見る方や、月額料金を抑えたい方に向いています。
   </p>
-  <p style="text-align:center;margin:20px 0 28px;">
-    <a href="${affiliateLinks.dmmtv}" target="_blank" rel="nofollow sponsored noopener"
-    style="display:inline-block;padding:14px 26px;border-radius:8px;font-weight:700;text-decoration:none;background:#ff6600;color:#fff;">
+  <div style="text-align:center;margin:24px 0;">
+    <button onclick="location.href='${affiliateLinks.dmmtv}'"
+    style="padding:14px 28px;background:#ff6600;color:#fff;border:2px solid #cc5200;border-radius:6px;box-shadow:0 5px 0 #cc5200;cursor:pointer;font-weight:bold;font-size:16px;transition:all 0.1s ease;"
+    onmouseover="this.style.transform='translateY(2px)'; this.style.boxShadow='0 3px 0 #cc5200';"
+    onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 5px 0 #cc5200';"
+    onmousedown="this.style.transform='translateY(5px)'; this.style.boxShadow='0px 0 #cc5200';"
+    onmouseup="this.style.transform='translateY(2px)'; this.style.boxShadow='0 3px 0 #cc5200';">
     DMM TV公式サイトを見る
-    </a>
-  </p>
+    </button>
+  </div>
 
   <h3>Hulu</h3>
   <p>
     Huluは海外ドラマや国内ドラマが充実している動画配信サービスです。
     ドラマ中心で楽しみたい方や、見逃し配信も気になる方におすすめです。
   </p>
-  <p style="text-align:center;margin:20px 0 28px;">
-    <a href="${affiliateLinks.hulu}" target="_blank" rel="nofollow sponsored noopener"
-    style="display:inline-block;padding:14px 26px;border-radius:8px;font-weight:700;text-decoration:none;background:#1ce783;color:#111;">
+  <div style="text-align:center;margin:24px 0;">
+    <button onclick="location.href='${affiliateLinks.hulu}'"
+    style="padding:14px 28px;background:#1ce783;color:#111;border:2px solid #14b866;border-radius:6px;box-shadow:0 5px 0 #14b866;cursor:pointer;font-weight:bold;font-size:16px;transition:all 0.1s ease;"
+    onmouseover="this.style.transform='translateY(2px)'; this.style.boxShadow='0 3px 0 #14b866';"
+    onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 5px 0 #14b866';"
+    onmousedown="this.style.transform='translateY(5px)'; this.style.boxShadow='0px 0 #14b866';"
+    onmouseup="this.style.transform='translateY(2px)'; this.style.boxShadow='0 3px 0 #14b866';">
     Hulu公式サイトを見る
-    </a>
-  </p>
+    </button>
+  </div>
 
   <h3>Amazon Prime Video</h3>
   <p>
     Amazon Prime Videoはコスパの良い動画配信サービスで、映画やドラマ、アニメも幅広く配信されています。
     できるだけ費用を抑えて楽しみたい方にも向いています。
   </p>
-  <p style="text-align:center;margin:20px 0 28px;">
-    <a href="${affiliateLinks.prime}" target="_blank" rel="nofollow sponsored noopener"
-    style="display:inline-block;padding:14px 26px;border-radius:8px;font-weight:700;text-decoration:none;background:#0073aa;color:#fff;">
+  <div style="text-align:center;margin:24px 0;">
+    <button onclick="location.href='${affiliateLinks.prime}'"
+    style="padding:14px 28px;background:#0073aa;color:#fff;border:2px solid #005a84;border-radius:6px;box-shadow:0 5px 0 #005a84;cursor:pointer;font-weight:bold;font-size:16px;transition:all 0.1s ease;"
+    onmouseover="this.style.transform='translateY(2px)'; this.style.boxShadow='0 3px 0 #005a84';"
+    onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 5px 0 #005a84';"
+    onmousedown="this.style.transform='translateY(5px)'; this.style.boxShadow='0px 0 #005a84';"
+    onmouseup="this.style.transform='translateY(2px)'; this.style.boxShadow='0 3px 0 #005a84';">
     Prime Videoはこちら
-    </a>
-  </p>
+    </button>
+  </div>
 
   <h2>${title}の見どころ</h2>
   <ul>
