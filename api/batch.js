@@ -191,246 +191,184 @@ function detectCategories({ title, mediaType }) {
 
 function renderHtml({ title, ai, poster }) {
   return `
-<!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</title>
-  <meta name="description" content="${title}の配信はどこで見れるのか気になる方向けに、見逃し配信・サブスク・無料視聴の考え方をわかりやすく整理しました。最新の配信状況を確認するポイントも紹介します。" />
-  <style>
-    .sp-wrap {
-      max-width: 760px;
-      margin: 24px auto;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.9;
-      padding: 0 16px;
-    }
-    .sp-poster {
-      width: 100%;
-      max-width: 420px;
-      display: block;
-      margin: 0 auto 24px;
-      border-radius: 12px;
-    }
-    .sp-table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: center;
-      margin: 16px 0 24px;
-    }
-    .sp-table th,
-    .sp-table td {
-      border: 1px solid #ddd;
-      padding: 10px;
-    }
-    .sp-btn-wrap {
-      text-align: center;
-      margin: 20px 0 28px;
-    }
-    a.sp-btn,
-    a.sp-btn:visited {
-      display: inline-block;
-      padding: 14px 26px;
-      border-radius: 8px;
-      font-weight: 700;
-      text-decoration: none !important;
-      line-height: 1.4;
-      border: none;
-      box-shadow: none;
-    }
-    a.sp-btn::before,
-    a.sp-btn::after {
-      content: none !important;
-      display: none !important;
-    }
-    a.sp-btn:hover {
-      opacity: 0.92;
-      text-decoration: none !important;
-    }
-    .sp-btn-unext { background: #e60023; color: #fff !important; }
-    .sp-btn-dmmtv { background: #ff6600; color: #fff !important; }
-    .sp-btn-hulu { background: #1ce783; color: #111 !important; }
-    .sp-btn-prime { background: #0073aa; color: #fff !important; }
-  </style>
-</head>
-<body>
-  <main class="sp-wrap">
+<div style="max-width:760px;margin:24px auto;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.9;padding:0 16px;">
 
-    ${poster ? `<img src="${poster}" alt="${title}" class="sp-poster">` : ""}
+  ${poster ? `<img src="${poster}" alt="${title}" style="width:100%;max-width:420px;display:block;margin:0 auto 24px;border-radius:12px;">` : ""}
 
-    <h1>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</h1>
+  <h1>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</h1>
 
-    <p>${ai.lead}</p>
+  <p>${ai.lead}</p>
 
-    <h2>${title}の配信はどこで見れる？</h2>
-    <p>
-      ${title}を見たいけれど、どの動画配信サービスで配信されているのか気になる方も多いのではないでしょうか。
-      配信ラインナップは時期によって変わるため、最新情報は各サービスの公式サイトで確認するのがおすすめです。
-    </p>
+  <h2>${title}の配信はどこで見れる？</h2>
+  <p>
+    ${title}を見たいけれど、どの動画配信サービスで配信されているのか気になる方も多いのではないでしょうか。
+    配信ラインナップは時期によって変わるため、最新情報は各サービスの公式サイトで確認するのがおすすめです。
+  </p>
 
-    <h2>${title}を視聴できる可能性がある動画配信サービス</h2>
-    <table class="sp-table">
-      <tr>
-        <th>サービス</th>
-        <th>月額料金</th>
-        <th>無料体験</th>
-      </tr>
-      <tr>
-        <td>U-NEXT</td>
-        <td>2189円</td>
-        <td>31日</td>
-      </tr>
-      <tr>
-        <td>DMM TV</td>
-        <td>550円</td>
-        <td>30日</td>
-      </tr>
-      <tr>
-        <td>Hulu</td>
-        <td>1026円</td>
-        <td>なし</td>
-      </tr>
-      <tr>
-        <td>Amazon Prime Video</td>
-        <td>600円</td>
-        <td>30日</td>
-      </tr>
-      <tr>
-        <td>ABEMA</td>
-        <td>プランによる</td>
-        <td>なし</td>
-      </tr>
-      <tr>
-        <td>DAZN</td>
-        <td>プランによる</td>
-        <td>なし</td>
-      </tr>
-    </table>
+  <h2>${title}を視聴できる可能性がある動画配信サービス</h2>
+  <table style="width:100%;border-collapse:collapse;text-align:center;margin:16px 0 24px;">
+    <tr>
+      <th style="border:1px solid #ddd;padding:10px;">サービス</th>
+      <th style="border:1px solid #ddd;padding:10px;">月額料金</th>
+      <th style="border:1px solid #ddd;padding:10px;">無料体験</th>
+    </tr>
+    <tr>
+      <td style="border:1px solid #ddd;padding:10px;">U-NEXT</td>
+      <td style="border:1px solid #ddd;padding:10px;">2189円</td>
+      <td style="border:1px solid #ddd;padding:10px;">31日</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #ddd;padding:10px;">DMM TV</td>
+      <td style="border:1px solid #ddd;padding:10px;">550円</td>
+      <td style="border:1px solid #ddd;padding:10px;">30日</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #ddd;padding:10px;">Hulu</td>
+      <td style="border:1px solid #ddd;padding:10px;">1026円</td>
+      <td style="border:1px solid #ddd;padding:10px;">なし</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #ddd;padding:10px;">Amazon Prime Video</td>
+      <td style="border:1px solid #ddd;padding:10px;">600円</td>
+      <td style="border:1px solid #ddd;padding:10px;">30日</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #ddd;padding:10px;">ABEMA</td>
+      <td style="border:1px solid #ddd;padding:10px;">プランによる</td>
+      <td style="border:1px solid #ddd;padding:10px;">なし</td>
+    </tr>
+    <tr>
+      <td style="border:1px solid #ddd;padding:10px;">DAZN</td>
+      <td style="border:1px solid #ddd;padding:10px;">プランによる</td>
+      <td style="border:1px solid #ddd;padding:10px;">なし</td>
+    </tr>
+  </table>
 
-    <h2>${title}を無料で見る方法</h2>
-    <p>
-      無料で視聴したい場合は、無料体験のある動画配信サービスを活用する方法があります。
-      ただし、無料体験の有無や対象作品は時期によって変わるため、利用前に必ず公式サイトをご確認ください。
-    </p>
+  <h2>${title}を無料で見る方法</h2>
+  <p>
+    無料で視聴したい場合は、無料体験のある動画配信サービスを活用する方法があります。
+    ただし、無料体験の有無や対象作品は時期によって変わるため、利用前に必ず公式サイトをご確認ください。
+  </p>
 
-    <ul>
-      <li>U-NEXT（31日無料体験）</li>
-      <li>Amazon Prime Video（30日無料体験）</li>
-      <li>DMM TV（無料体験の実施状況は公式確認）</li>
-    </ul>
+  <ul>
+    <li>U-NEXT（31日無料体験）</li>
+    <li>Amazon Prime Video（30日無料体験）</li>
+    <li>DMM TV（無料体験の実施状況は公式確認）</li>
+  </ul>
 
-    <h2>おすすめの動画配信サービス</h2>
+  <h2>おすすめの動画配信サービス</h2>
 
-    <h3>U-NEXT</h3>
-    <p>
-      U-NEXTは見放題作品数が非常に多く、映画・ドラマ・アニメまで幅広いジャンルを楽しめる動画配信サービスです。
-      作品数を重視したい方や、いろいろな作品をまとめて楽しみたい方に向いています。
-    </p>
-    <div class="sp-btn-wrap">
-      <a href="${affiliateLinks.unext}" target="_blank" rel="nofollow sponsored noopener" class="sp-btn sp-btn-unext">
-        U-NEXT公式サイトを見る
-      </a>
-    </div>
+  <h3>U-NEXT</h3>
+  <p>
+    U-NEXTは見放題作品数が非常に多く、映画・ドラマ・アニメまで幅広いジャンルを楽しめる動画配信サービスです。
+    作品数を重視したい方や、いろいろな作品をまとめて楽しみたい方に向いています。
+  </p>
+  <p style="text-align:center;margin:20px 0 28px;">
+    <a href="${affiliateLinks.unext}" target="_blank" rel="nofollow sponsored noopener"
+    style="display:inline-block;padding:14px 26px;border-radius:8px;font-weight:700;text-decoration:none;background:#e60023;color:#fff;">
+    U-NEXT公式サイトを見る
+    </a>
+  </p>
 
-    <h3>DMM TV</h3>
-    <p>
-      DMM TVはコスパの良さが魅力の動画配信サービスです。
-      とくにアニメ作品をよく見る方や、月額料金を抑えたい方に向いています。
-    </p>
-    <div class="sp-btn-wrap">
-      <a href="${affiliateLinks.dmmtv}" target="_blank" rel="nofollow sponsored noopener" class="sp-btn sp-btn-dmmtv">
-        DMM TV公式サイトを見る
-      </a>
-    </div>
+  <h3>DMM TV</h3>
+  <p>
+    DMM TVはコスパの良さが魅力の動画配信サービスです。
+    とくにアニメ作品をよく見る方や、月額料金を抑えたい方に向いています。
+  </p>
+  <p style="text-align:center;margin:20px 0 28px;">
+    <a href="${affiliateLinks.dmmtv}" target="_blank" rel="nofollow sponsored noopener"
+    style="display:inline-block;padding:14px 26px;border-radius:8px;font-weight:700;text-decoration:none;background:#ff6600;color:#fff;">
+    DMM TV公式サイトを見る
+    </a>
+  </p>
 
-    <h3>Hulu</h3>
-    <p>
-      Huluは海外ドラマや国内ドラマが充実している動画配信サービスです。
-      ドラマ中心で楽しみたい方や、見逃し配信も気になる方におすすめです。
-    </p>
-    <div class="sp-btn-wrap">
-      <a href="${affiliateLinks.hulu}" target="_blank" rel="nofollow sponsored noopener" class="sp-btn sp-btn-hulu">
-        Hulu公式サイトを見る
-      </a>
-    </div>
+  <h3>Hulu</h3>
+  <p>
+    Huluは海外ドラマや国内ドラマが充実している動画配信サービスです。
+    ドラマ中心で楽しみたい方や、見逃し配信も気になる方におすすめです。
+  </p>
+  <p style="text-align:center;margin:20px 0 28px;">
+    <a href="${affiliateLinks.hulu}" target="_blank" rel="nofollow sponsored noopener"
+    style="display:inline-block;padding:14px 26px;border-radius:8px;font-weight:700;text-decoration:none;background:#1ce783;color:#111;">
+    Hulu公式サイトを見る
+    </a>
+  </p>
 
-    <h3>Amazon Prime Video</h3>
-    <p>
-      Amazon Prime Videoはコスパの良い動画配信サービスで、映画やドラマ、アニメも幅広く配信されています。
-      できるだけ費用を抑えて楽しみたい方にも向いています。
-    </p>
-    <div class="sp-btn-wrap">
-      <a href="${affiliateLinks.prime}" target="_blank" rel="nofollow sponsored noopener" class="sp-btn sp-btn-prime">
-        Prime Videoはこちら
-      </a>
-    </div>
+  <h3>Amazon Prime Video</h3>
+  <p>
+    Amazon Prime Videoはコスパの良い動画配信サービスで、映画やドラマ、アニメも幅広く配信されています。
+    できるだけ費用を抑えて楽しみたい方にも向いています。
+  </p>
+  <p style="text-align:center;margin:20px 0 28px;">
+    <a href="${affiliateLinks.prime}" target="_blank" rel="nofollow sponsored noopener"
+    style="display:inline-block;padding:14px 26px;border-radius:8px;font-weight:700;text-decoration:none;background:#0073aa;color:#fff;">
+    Prime Videoはこちら
+    </a>
+  </p>
 
-    <h2>${title}の見どころ</h2>
-    <ul>
-      ${ai.highlights.map((x) => `<li>${x}</li>`).join("")}
-    </ul>
+  <h2>${title}の見どころ</h2>
+  <ul>
+    ${ai.highlights.map((x) => `<li>${x}</li>`).join("")}
+  </ul>
 
-    <h2>こんな人におすすめ</h2>
-    <ul>
-      ${ai.recommendedFor.map((x) => `<li>${x}</li>`).join("")}
-    </ul>
+  <h2>こんな人におすすめ</h2>
+  <ul>
+    ${ai.recommendedFor.map((x) => `<li>${x}</li>`).join("")}
+  </ul>
 
-    <h2>${title}の作品情報</h2>
-    <p>
-      作品情報は公開時期や配信サービスによって表記が異なる場合があります。
-      正確な情報は公式サイトや作品ページで確認するのがおすすめです。
-    </p>
+  <h2>${title}の作品情報</h2>
+  <p>
+    作品情報は公開時期や配信サービスによって表記が異なる場合があります。
+    正確な情報は公式サイトや作品ページで確認するのがおすすめです。
+  </p>
 
-    <h2>配信サービスを選ぶポイント</h2>
-    <ol>
-      <li>見たい作品が配信されているか</li>
-      <li>月額料金と無料体験の条件</li>
-      <li>画質・同時視聴・ダウンロード機能</li>
-      <li>字幕・吹替・対応端末の使いやすさ</li>
-    </ol>
+  <h2>配信サービスを選ぶポイント</h2>
+  <ol>
+    <li>見たい作品が配信されているか</li>
+    <li>月額料金と無料体験の条件</li>
+    <li>画質・同時視聴・ダウンロード機能</li>
+    <li>字幕・吹替・対応端末の使いやすさ</li>
+  </ol>
 
-    <h2>見逃し配信や無料視聴を探すときの注意点</h2>
-    <p>
-      「無料で見れる」「見逃し配信がある」と書かれていても、時期やキャンペーン条件によって対象外になることがあります。
-      登録前に、対象作品かどうか、無料体験の対象条件、視聴期限の有無を確認しておくと安心です。
-    </p>
+  <h2>見逃し配信や無料視聴を探すときの注意点</h2>
+  <p>
+    「無料で見れる」「見逃し配信がある」と書かれていても、時期やキャンペーン条件によって対象外になることがあります。
+    登録前に、対象作品かどうか、無料体験の対象条件、視聴期限の有無を確認しておくと安心です。
+  </p>
 
-    <h2>よくある質問</h2>
+  <h2>よくある質問</h2>
 
-    <h3>Q. ${title}は無料で見れますか？</h3>
-    <p>
-      A. 無料体験があるサービスでも、対象外の場合があります。必ず公式で対象作品か確認してください。
-    </p>
+  <h3>Q. ${title}は無料で見れますか？</h3>
+  <p>
+    A. 無料体験があるサービスでも、対象外の場合があります。必ず公式で対象作品か確認してください。
+  </p>
 
-    <h3>Q. ${title}の見逃し配信を見たいときは？</h3>
-    <p>
-      A. 見逃し配信は期間限定の場合があります。作品名で検索し、最新の配信状況を公式ページで確認するのが確実です。
-    </p>
+  <h3>Q. ${title}の見逃し配信を見たいときは？</h3>
+  <p>
+    A. 見逃し配信は期間限定の場合があります。作品名で検索し、最新の配信状況を公式ページで確認するのが確実です。
+  </p>
 
-    <h3>Q. どのサブスクを選べばいいですか？</h3>
-    <p>
-      A. まずは${title}を視聴できるかを確認し、そのうえで月額料金、無料体験、画質、同時視聴のしやすさを比較するのがおすすめです。
-    </p>
+  <h3>Q. どのサブスクを選べばいいですか？</h3>
+  <p>
+    A. まずは${title}を視聴できるかを確認し、そのうえで月額料金、無料体験、画質、同時視聴のしやすさを比較するのがおすすめです。
+  </p>
 
-    <h2>どの動画配信サービスを選ぶか迷ったら</h2>
-    <p>
-      動画配信サービス選びで迷っている方は、主要サービスを比較したランキングページも参考にしてください。
-    </p>
-    <p>
-      <a href="https://stream-press.com/vod-ranking/">おすすめ動画配信サービスランキングはこちら</a>
-    </p>
+  <h2>どの動画配信サービスを選ぶか迷ったら</h2>
+  <p>
+    動画配信サービス選びで迷っている方は、主要サービスを比較したランキングページも参考にしてください。
+  </p>
+  <p>
+    <a href="https://stream-press.com/vod-ranking/">おすすめ動画配信サービスランキングはこちら</a>
+  </p>
 
-    <h2>注意点</h2>
-    <p>${ai.caution}</p>
+  <h2>注意点</h2>
+  <p>${ai.caution}</p>
 
-    <hr />
-    <p style="font-size:12px;opacity:.75;">
-      ※当ページは配信可否を保証するものではありません。最新の配信状況は各サービスの公式情報をご確認ください。
-    </p>
-  </main>
-</body>
-</html>
+  <hr />
+  <p style="font-size:12px;opacity:.75;">
+    ※当ページは配信可否を保証するものではありません。最新の配信状況は各サービスの公式情報をご確認ください。
+  </p>
+</div>
 `.trim();
 }
 
