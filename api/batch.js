@@ -2,17 +2,157 @@
 // 1) TMDBから人気作品を取得
 // 2) 作品ごとに記事HTMLを生成（OpenAI）
 // 3) Supabaseに保存（slug重複はスキップ）
+// 4) WordPressへ下書き投稿
 
 const affiliateLinks = require("../lib/affiliateLinks");
 
 function slugifyJP(title) {
-  return title
+  return String(title || "")
     .trim()
     .toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
-    .slice(0, 120);
+    .slice(0, 100);
+}
+
+function escapeHtml(str = "") {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function nl2brSafe(str = "") {
+  return escapeHtml(str).replace(/\r?\n/g, "<br>");
+}
+
+function normalizeArray(arr, fallback = []) {
+  if (!Array.isArray(arr)) return fallback;
+  return arr
+    .map((x) => String(x || "").trim())
+    .filter(Boolean);
+}
+
+function safeJsonParse(text, fallback = null) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return fallback;
+  }
+}
+
+function buildSlug({ title, mediaType, tmdbId }) {
+  const base = slugifyJP(title) || "title";
+  const suffix = [mediaType, tmdbId].filter(Boolean).join("-");
+  return suffix ? `${base}-${suffix}`.slice(0, 120) : base.slice(0, 120);
+}
+
+function validateAi(ai) {
+  if (!ai || typeof ai !== "object") return false;
+
+  const lead = String(ai.lead || "").trim();
+  const highlights = normalizeArray(ai.highlights);
+  const recommendedFor = normalizeArray(ai.recommendedFor);
+  const caution = String(ai.caution || "").trim();
+
+  if (lead.length < 80) return false;
+  if (highlights.length < 3) return false;
+  if (recommendedFor.length < 3) return false;
+  if (caution.length < 40) return false;
+
+  return true;
+}
+
+function sanitizeAi(ai) {
+  return {
+    lead: String(ai?.lead || "").trim(),
+    highlights: normalizeArray(ai?.highlights).slice(0, 5),
+    recommendedFor: normalizeArray(ai?.recommendedFor).slice(0, 5),
+    caution: String(ai?.caution || "").trim(),
+  };
+}
+
+function isAnimeTitle(title = "") {
+  return /アニメ|プリキュア|ガンダム|ポケモン|ドラゴンボール|ワンピース|名探偵コナン|呪術廻戦|鬼滅の刃|SPY×FAMILY|スパイファミリー|クレヨンしんちゃん|ちいかわ|ドラえもん/i.test(
+    title
+  );
+}
+
+function isKoreanDramaTitle(title = "") {
+  return /愛の不時着|梨泰院クラス|トッケビ|ウ・ヨンウ|キム秘書|太陽の末裔|ペントハウス/i.test(
+    title
+  );
+}
+
+function isJapaneseDramaTitle(title = "") {
+  return /相棒|科捜研の女|ドクターX|silent|VIVANT|半沢直樹|アンナチュラル|MIU404/i.test(
+    title
+  );
+}
+
+function detectCategories(item) {
+  const categories = ["配信どこ"];
+
+  const title = item?.title || "";
+  const mediaType = item?.mediaType || "";
+  const genreIds = Array.isArray(item?.genreIds) ? item.genreIds : [];
+  const originalLanguage = item?.originalLanguage || "";
+  const originCountry = Array.isArray(item?.originCountry) ? item.originCountry : [];
+
+  const isAnime =
+    isAnimeTitle(title) ||
+    genreIds.includes(16) ||
+    (originalLanguage === "ja" && /アニメ/i.test(title));
+
+  const isKoreanDrama =
+    isKoreanDramaTitle(title) ||
+    originalLanguage === "ko" ||
+    originCountry.includes("KR");
+
+  const isJapaneseDrama =
+    isJapaneseDramaTitle(title) ||
+    originalLanguage === "ja" ||
+    originCountry.includes("JP");
+
+  if (mediaType === "movie") {
+    categories.push("映画");
+  }
+
+  if (isAnime) {
+    categories.push("アニメ");
+  } else if (mediaType === "tv") {
+    if (isKoreanDrama) {
+      categories.push("韓国ドラマ");
+    } else if (isJapaneseDrama) {
+      categories.push("国内ドラマ");
+    } else {
+      categories.push("海外ドラマ");
+    }
+  }
+
+  return Array.from(new Set(categories));
+}
+
+function renderWpButton(url, label, bgColor, textColor = "#ffffff") {
+  const safeUrl = String(url || "").trim();
+  if (!safeUrl) return "";
+
+  return `
+  <div class="wp-block-buttons is-layout-flex" style="justify-content:center;margin:24px 0;">
+    <div class="wp-block-button">
+      <a class="wp-block-button__link wp-element-button"
+         href="${escapeHtml(safeUrl)}"
+         target="_blank"
+         rel="nofollow sponsored noopener"
+         style="display:inline-block;padding:14px 28px;border-radius:6px;background-color:${bgColor};color:${textColor};text-decoration:none;font-weight:bold;font-size:16px;line-height:1.4;">
+         ${escapeHtml(label)}
+      </a>
+    </div>
+  </div>
+  `;
 }
 
 async function postToWordPress({ title, html, slug, poster, categories }) {
@@ -46,11 +186,14 @@ async function postToWordPress({ title, html, slug, poster, categories }) {
   });
 
   const text = await res.text();
+  const json = safeJsonParse(text, null);
 
   return {
     ok: res.ok,
     status: res.status,
     bodyHead: text.slice(0, 300),
+    wpPostId: json?.id || null,
+    wpUrl: json?.url || json?.link || null,
   };
 }
 
@@ -62,6 +205,7 @@ async function fetchTmdbTitles() {
   const movieUrl = `https://api.themoviedb.org/3/movie/popular?api_key=${key}&language=ja-JP&page=1&region=JP`;
 
   const [tvRes, movieRes] = await Promise.all([fetch(tvUrl), fetch(movieUrl)]);
+
   if (!tvRes.ok) throw new Error(`TMDB TV status ${tvRes.status}`);
   if (!movieRes.ok) throw new Error(`TMDB Movie status ${movieRes.status}`);
 
@@ -69,19 +213,27 @@ async function fetchTmdbTitles() {
   const movieJson = await movieRes.json();
 
   const tvItems = (tvJson.results || [])
-    .filter((x) => x.name)
+    .filter((x) => x && x.name)
     .map((x) => ({
       title: x.name,
       mediaType: "tv",
+      tmdbId: x.id,
       posterPath: x.poster_path || null,
+      genreIds: x.genre_ids || [],
+      originalLanguage: x.original_language || "",
+      originCountry: x.origin_country || [],
     }));
 
   const movieItems = (movieJson.results || [])
-    .filter((x) => x.title)
+    .filter((x) => x && x.title)
     .map((x) => ({
       title: x.title,
       mediaType: "movie",
+      tmdbId: x.id,
       posterPath: x.poster_path || null,
+      genreIds: x.genre_ids || [],
+      originalLanguage: x.original_language || "",
+      originCountry: [],
     }));
 
   const merged = [...tvItems, ...movieItems];
@@ -90,42 +242,52 @@ async function fetchTmdbTitles() {
   const seen = new Set();
 
   for (const item of merged) {
-    if (seen.has(item.title)) continue;
-    seen.add(item.title);
+    const keyByTypeAndId = `${item.mediaType}:${item.tmdbId}`;
+    if (seen.has(keyByTypeAndId)) continue;
+    seen.add(keyByTypeAndId);
     unique.push(item);
   }
 
   return unique
     .filter(
       (x) =>
+        x.title &&
         x.title.length < 80 &&
         !/news|live|tonight|late show|tagesschau/i.test(x.title)
     )
     .slice(0, 10);
 }
 
-async function callOpenAI({ title }) {
+async function callOpenAI({ title, mediaType }) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
 
   const prompt = `
 あなたは日本の配信情報メディア編集者です。
-次の作品について、配信先を断定せずに紹介記事として使える文章パーツを作ってください。
+次の作品について、配信先を断定せずに紹介記事で使える文章パーツを作ってください。
 
 【重要ルール】
 - 配信サービス名を断定で書かない（「〜で配信中」と言い切らない）
 - 事実不明なことは推測しない
-- 作品名以外の年・キャスト・制作会社などは断定しない
+- 作品名以外の年・キャスト・制作会社・放送局などは断定しない
+- 「すでに配信終了」などの断定もしない
+- 日本語で自然に書く
 - 出力は必ずJSONのみ
+- highlights と recommendedFor は各3〜5個
+- lead は200〜350字
+- caution は80〜160字
+- 作品の魅力や視聴の探し方に寄せて書く
+- 「配信状況は変動するため公式サイト確認が必要」という前提に沿う
 
 作品名: ${title}
+メディア種別: ${mediaType}
 
 出力JSON:
 {
-  "lead": "導入文（200〜350字）",
+  "lead": "導入文",
   "highlights": ["見どころ1","見どころ2","見どころ3"],
   "recommendedFor": ["おすすめ1","おすすめ2","おすすめ3"],
-  "caution": "注意点（80〜160字）"
+  "caution": "注意点"
 }
 `.trim();
 
@@ -138,18 +300,46 @@ async function callOpenAI({ title }) {
     body: JSON.stringify({
       model: "gpt-4.1-mini",
       input: prompt,
-      text: { format: { type: "json_object" } },
+      text: {
+        format: {
+          type: "json_object",
+        },
+      },
     }),
   });
 
+  const raw = await r.text();
+
   if (!r.ok) {
-    const t = await r.text();
-    throw new Error(`OpenAI error ${r.status}: ${t.slice(0, 300)}`);
+    throw new Error(`OpenAI error ${r.status}: ${raw.slice(0, 500)}`);
   }
 
-  const data = await r.json();
-  const jsonText = data.output?.[0]?.content?.[0]?.text || data.output_text;
-  return JSON.parse(jsonText);
+  const data = safeJsonParse(raw, null);
+  if (!data) {
+    throw new Error(`OpenAI response parse failed: ${raw.slice(0, 500)}`);
+  }
+
+  const jsonText =
+    data.output?.[0]?.content?.[0]?.text ||
+    data.output_text ||
+    "";
+
+  if (!jsonText) {
+    throw new Error(`OpenAI output missing: ${raw.slice(0, 500)}`);
+  }
+
+  const parsed = safeJsonParse(jsonText, null);
+  if (!parsed) {
+    throw new Error(`OpenAI JSON body parse failed: ${jsonText.slice(0, 500)}`);
+  }
+
+  const sanitized = sanitizeAi(parsed);
+
+  if (!validateAi(sanitized)) {
+    throw new Error(`OpenAI output validation failed: ${jsonText.slice(0, 500)}`);
+  }
+
+  return sanitized;
 }
 
 async function fetchTmdbPoster(title) {
@@ -171,57 +361,8 @@ async function fetchTmdbPoster(title) {
   return `https://image.tmdb.org/t/p/w500${poster}`;
 }
 
-function detectCategories({ title, mediaType }) {
-  const categories = ["配信どこ"];
-
-  if (mediaType === "movie") {
-    categories.push("映画");
-  }
-
-  if (mediaType === "tv") {
-    categories.push("海外ドラマ");
-  }
-
-  if (/アニメ|プリキュア|ガンダム|ポケモン|ドラゴンボール|ワンピース|名探偵コナン|呪術廻戦|鬼滅の刃|SPY×FAMILY/i.test(title)) {
-    categories.push("アニメ");
-  }
-
-  return Array.from(new Set(categories));
-}
-
-function renderWpButton(url, label, bgColor, textColor = "#ffffff") {
+function renderServiceTable() {
   return `
-  <div class="wp-block-buttons is-layout-flex" style="justify-content:center;margin:24px 0;">
-    <div class="wp-block-button">
-      <a class="wp-block-button__link wp-element-button"
-         href="${url}"
-         target="_blank"
-         rel="nofollow sponsored noopener"
-         style="border-radius:6px;background-color:${bgColor};color:${textColor};text-decoration:none;">
-         ${label}
-      </a>
-    </div>
-  </div>
-  `;
-}
-
-function renderHtml({ title, ai, poster }) {
-  return `
-<div style="max-width:760px;margin:24px auto;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.9;padding:0 16px;">
-
-  ${poster ? `<img src="${poster}" alt="${title}" style="width:100%;max-width:420px;display:block;margin:0 auto 24px;border-radius:12px;">` : ""}
-
-  <h1>${title}の配信はどこ？見逃し・サブスク・無料視聴できる動画サービスまとめ</h1>
-
-  <p>${ai.lead}</p>
-
-  <h2>${title}の配信はどこで見れる？</h2>
-  <p>
-    ${title}を見たいけれど、どの動画配信サービスで配信されているのか気になる方も多いのではないでしょうか。
-    配信ラインナップは時期によって変わるため、最新情報は各サービスの公式サイトで確認するのがおすすめです。
-  </p>
-
-  <h2>${title}を視聴できる可能性がある動画配信サービス</h2>
   <table style="width:100%;border-collapse:collapse;text-align:center;margin:16px 0 24px;">
     <tr>
       <th style="border:1px solid #ddd;padding:10px;">サービス</th>
@@ -230,128 +371,181 @@ function renderHtml({ title, ai, poster }) {
     </tr>
     <tr>
       <td style="border:1px solid #ddd;padding:10px;">U-NEXT</td>
-      <td style="border:1px solid #ddd;padding:10px;">2189円</td>
-      <td style="border:1px solid #ddd;padding:10px;">31日</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
     </tr>
     <tr>
       <td style="border:1px solid #ddd;padding:10px;">DMM TV</td>
-      <td style="border:1px solid #ddd;padding:10px;">550円</td>
-      <td style="border:1px solid #ddd;padding:10px;">30日</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
     </tr>
     <tr>
       <td style="border:1px solid #ddd;padding:10px;">Hulu</td>
-      <td style="border:1px solid #ddd;padding:10px;">1026円</td>
-      <td style="border:1px solid #ddd;padding:10px;">なし</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
     </tr>
     <tr>
       <td style="border:1px solid #ddd;padding:10px;">Amazon Prime Video</td>
-      <td style="border:1px solid #ddd;padding:10px;">600円</td>
-      <td style="border:1px solid #ddd;padding:10px;">30日</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
     </tr>
     <tr>
       <td style="border:1px solid #ddd;padding:10px;">ABEMA</td>
-      <td style="border:1px solid #ddd;padding:10px;">プランによる</td>
-      <td style="border:1px solid #ddd;padding:10px;">なし</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
     </tr>
     <tr>
       <td style="border:1px solid #ddd;padding:10px;">DAZN</td>
-      <td style="border:1px solid #ddd;padding:10px;">プランによる</td>
-      <td style="border:1px solid #ddd;padding:10px;">なし</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
+      <td style="border:1px solid #ddd;padding:10px;">公式サイトで確認</td>
     </tr>
   </table>
+  `.trim();
+}
 
-  <h2>${title}を無料で見る方法</h2>
+function renderAffiliateButtons() {
+  const blocks = [];
+
+  if (affiliateLinks.unext) {
+    blocks.push(
+      renderWpButton(
+        affiliateLinks.unext,
+        "U-NEXT公式サイトを見る",
+        "#e60023",
+        "#ffffff"
+      )
+    );
+  }
+
+  if (affiliateLinks.dmmtv) {
+    blocks.push(
+      renderWpButton(
+        affiliateLinks.dmmtv,
+        "DMM TV公式サイトを見る",
+        "#ff6600",
+        "#ffffff"
+      )
+    );
+  }
+
+  if (affiliateLinks.hulu) {
+    blocks.push(
+      renderWpButton(
+        affiliateLinks.hulu,
+        "Hulu公式サイトを見る",
+        "#1ce783",
+        "#111111"
+      )
+    );
+  }
+
+  if (affiliateLinks.prime) {
+    blocks.push(
+      renderWpButton(
+        affiliateLinks.prime,
+        "Prime Videoはこちら",
+        "#0073aa",
+        "#ffffff"
+      )
+    );
+  }
+
+  return blocks.join("\n");
+}
+
+function renderHtml({ title, ai, poster }) {
+  const safeTitle = escapeHtml(title);
+  const safeLead = nl2brSafe(ai.lead);
+  const safeCaution = nl2brSafe(ai.caution);
+
+  const highlightsHtml = ai.highlights
+    .map((x) => `<li>${escapeHtml(x)}</li>`)
+    .join("");
+
+  const recommendedHtml = ai.recommendedFor
+    .map((x) => `<li>${escapeHtml(x)}</li>`)
+    .join("");
+
+  return `
+<div style="max-width:760px;margin:24px auto;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.9;padding:0 16px;">
+
+  ${poster ? `<img src="${escapeHtml(poster)}" alt="${safeTitle}" style="width:100%;max-width:420px;display:block;margin:0 auto 24px;border-radius:12px;">` : ""}
+
+  <h1>${safeTitle}を見たい人向け｜配信サービスの探し方とおすすめVOD</h1>
+
+  <p>${safeLead}</p>
+
+  <h2>${safeTitle}を見たい人向けの基本ポイント</h2>
   <p>
-    無料で視聴したい場合は、無料体験のある動画配信サービスを活用する方法があります。
+    ${safeTitle}を見たいと思ったときは、まず主要な動画配信サービスで作品名検索を行い、
+    見放題・レンタル・購入のどれに該当するかを確認するのが基本です。
+    配信ラインナップは時期によって変わるため、最新情報は各サービスの公式サイトで確認するのがおすすめです。
+  </p>
+
+  <h2>${safeTitle}を探すときに候補になりやすい動画配信サービス</h2>
+  <p>
+    作品によって配信先は異なりますが、映画・ドラマ・アニメを幅広く扱う主要サービスを見比べると見つけやすくなります。
+    まずは下記のような大手サービスをチェックしてみてください。
+  </p>
+
+  ${renderServiceTable()}
+
+  <h2>${safeTitle}を無料で見たい場合の考え方</h2>
+  <p>
+    無料で視聴したい場合は、無料体験のあるサービスやキャンペーンの実施状況を確認する方法があります。
     ただし、無料体験の有無や対象作品は時期によって変わるため、利用前に必ず公式サイトをご確認ください。
   </p>
 
   <ul>
-    <li>U-NEXT（31日無料体験）</li>
-    <li>Amazon Prime Video（30日無料体験）</li>
-    <li>DMM TV（無料体験の実施状況は公式確認）</li>
+    <li>無料体験の実施有無を公式サイトで確認する</li>
+    <li>見放題対象か、レンタル対象かを確認する</li>
+    <li>視聴期限やキャンペーン条件もあわせて確認する</li>
   </ul>
 
   <h2>おすすめの動画配信サービス</h2>
 
   <h3>U-NEXT</h3>
   <p>
-    U-NEXTは見放題作品数が非常に多く、映画・ドラマ・アニメまで幅広いジャンルを楽しめる動画配信サービスです。
-    作品数を重視したい方や、いろいろな作品をまとめて楽しみたい方に向いています。
+    U-NEXTは映画・ドラマ・アニメなど幅広いジャンルをチェックしやすい動画配信サービスです。
+    作品数を重視したい方や、ほかの候補作品もあわせて探したい方に向いています。
   </p>
-  <div style="text-align:center;margin:24px 0;">
-    <form action="${affiliateLinks.unext}" method="get" target="_blank" style="display:inline;">
-      <button type="submit"
-      style="display:inline-block;padding:14px 28px;background:#e60023;color:#fff;border:2px solid #b8001c;border-radius:6px;box-shadow:0 5px 0 #b8001c;cursor:pointer;font-weight:bold;font-size:16px;line-height:1.4;">
-      U-NEXT公式サイトを見る
-      </button>
-    </form>
-  </div>
 
   <h3>DMM TV</h3>
   <p>
-    DMM TVはコスパの良さが魅力の動画配信サービスです。
-    とくにアニメ作品をよく見る方や、月額料金を抑えたい方に向いています。
+    DMM TVはコストを意識しながら作品を探したい方に向いている動画配信サービスです。
+    とくにアニメやエンタメ系の作品もあわせて楽しみたい方に向いています。
   </p>
-  <div style="text-align:center;margin:24px 0;">
-    <form action="${affiliateLinks.dmmtv}" method="get" target="_blank" style="display:inline;">
-      <button type="submit"
-      style="display:inline-block;padding:14px 28px;background:#ff6600;color:#fff;border:2px solid #cc5200;border-radius:6px;box-shadow:0 5px 0 #cc5200;cursor:pointer;font-weight:bold;font-size:16px;line-height:1.4;">
-      DMM TV公式サイトを見る
-      </button>
-    </form>
-  </div>
 
   <h3>Hulu</h3>
   <p>
-    Huluは海外ドラマや国内ドラマが充実している動画配信サービスです。
-    ドラマ中心で楽しみたい方や、見逃し配信も気になる方におすすめです。
+    Huluはドラマ系作品を中心に探したい方にとって候補になりやすいサービスです。
+    海外ドラマや国内ドラマをあわせて楽しみたい場合にも比較対象として見ておきたいところです。
   </p>
-  <div style="text-align:center;margin:24px 0;">
-    <form action="${affiliateLinks.hulu}" method="get" target="_blank" style="display:inline;">
-      <button type="submit"
-      style="display:inline-block;padding:14px 28px;background:#1ce783;color:#111;border:2px solid #14b866;border-radius:6px;box-shadow:0 5px 0 #14b866;cursor:pointer;font-weight:bold;font-size:16px;line-height:1.4;">
-      Hulu公式サイトを見る
-      </button>
-    </form>
-  </div>
 
   <h3>Amazon Prime Video</h3>
   <p>
-    Amazon Prime Videoはコスパの良い動画配信サービスで、映画やドラマ、アニメも幅広く配信されています。
-    できるだけ費用を抑えて楽しみたい方にも向いています。
+    Amazon Prime Videoは、まず幅広く作品検索をしてみたい方にとって使いやすい候補です。
+    ほかの特典も含めてコスパを重視したい方にも向いています。
   </p>
-  <div style="text-align:center;margin:24px 0;">
-    <form action="${affiliateLinks.prime}" method="get" target="_blank" style="display:inline;">
-      <button type="submit"
-      style="display:inline-block;padding:14px 28px;background:#0073aa;color:#fff;border:2px solid #005a84;border-radius:6px;box-shadow:0 5px 0 #005a84;cursor:pointer;font-weight:bold;font-size:16px;line-height:1.4;">
-      Prime Videoはこちら
-      </button>
-    </form>
-  </div>
 
-  <h2>${title}の見どころ</h2>
+  ${renderAffiliateButtons()}
+
+  <h2>${safeTitle}の見どころ</h2>
   <ul>
-    ${ai.highlights.map((x) => `<li>${x}</li>`).join("")}
+    ${highlightsHtml}
   </ul>
 
   <h2>こんな人におすすめ</h2>
   <ul>
-    ${ai.recommendedFor.map((x) => `<li>${x}</li>`).join("")}
+    ${recommendedHtml}
   </ul>
 
-  <h2>${title}の作品情報</h2>
-  <p>
-    作品情報は公開時期や配信サービスによって表記が異なる場合があります。
-    正確な情報は公式サイトや作品ページで確認するのがおすすめです。
-  </p>
-
-  <h2>配信サービスを選ぶポイント</h2>
+  <h2>${safeTitle}を探すときのチェックポイント</h2>
   <ol>
-    <li>見たい作品が配信されているか</li>
-    <li>月額料金と無料体験の条件</li>
-    <li>画質・同時視聴・ダウンロード機能</li>
-    <li>字幕・吹替・対応端末の使いやすさ</li>
+    <li>作品名で検索して、見放題・レンタル・購入の区分を確認する</li>
+    <li>字幕・吹替・画質・対応端末の使いやすさを確認する</li>
+    <li>月額料金や無料体験の条件を比較する</li>
+    <li>シリーズ作品なら、関連作や続編も一緒に見られるか確認する</li>
   </ol>
 
   <h2>見逃し配信や無料視聴を探すときの注意点</h2>
@@ -362,19 +556,19 @@ function renderHtml({ title, ai, poster }) {
 
   <h2>よくある質問</h2>
 
-  <h3>Q. ${title}は無料で見れますか？</h3>
+  <h3>Q. ${safeTitle}は無料で見れますか？</h3>
   <p>
     A. 無料体験があるサービスでも、対象外の場合があります。必ず公式で対象作品か確認してください。
   </p>
 
-  <h3>Q. ${title}の見逃し配信を見たいときは？</h3>
+  <h3>Q. ${safeTitle}はどのサブスクで探せばいいですか？</h3>
   <p>
-    A. 見逃し配信は期間限定の場合があります。作品名で検索し、最新の配信状況を公式ページで確認するのが確実です。
+    A. まずは主要な動画配信サービスで作品名検索を行い、見放題・レンタル・購入の区分を比較するのがおすすめです。
   </p>
 
-  <h3>Q. どのサブスクを選べばいいですか？</h3>
+  <h3>Q. どの動画配信サービスを選べばいいですか？</h3>
   <p>
-    A. まずは${title}を視聴できるかを確認し、そのうえで月額料金、無料体験、画質、同時視聴のしやすさを比較するのがおすすめです。
+    A. 月額料金だけでなく、作品の取り扱い、無料体験、画質、同時視聴、ダウンロード対応などを総合的に比較するのがおすすめです。
   </p>
 
   <h2>どの動画配信サービスを選ぶか迷ったら</h2>
@@ -386,7 +580,7 @@ function renderHtml({ title, ai, poster }) {
   </p>
 
   <h2>注意点</h2>
-  <p>${ai.caution}</p>
+  <p>${safeCaution}</p>
 
   <hr />
   <p style="font-size:12px;opacity:.75;">
@@ -396,12 +590,21 @@ function renderHtml({ title, ai, poster }) {
 `.trim();
 }
 
-async function supabaseUpsert({ title, html }) {
+async function supabaseUpsert({ title, html, mediaType, tmdbId }) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("SUPABASE env is not set");
 
-  const slug = slugifyJP(title) || `title-${Date.now()}`;
+  const slug = buildSlug({ title, mediaType, tmdbId });
+
+  const payload = [
+    {
+      title,
+      slug,
+      html,
+      source: "tmdb",
+    },
+  ];
 
   const r = await fetch(`${url}/rest/v1/articles`, {
     method: "POST",
@@ -411,15 +614,23 @@ async function supabaseUpsert({ title, html }) {
       "Content-Type": "application/json",
       Prefer: "return=representation",
     },
-    body: JSON.stringify([{ title, slug, html, source: "tmdb" }]),
+    body: JSON.stringify(payload),
   });
 
-  if (r.ok) return { saved: true, slug };
+  if (r.ok) {
+    const j = await r.json().catch(() => []);
+    return {
+      saved: true,
+      slug,
+      row: Array.isArray(j) ? j[0] || null : null,
+    };
+  }
 
   const t = await r.text();
   if (t.includes("duplicate key") || t.includes("articles_slug_key")) {
     return { saved: false, slug, reason: "duplicate" };
   }
+
   throw new Error(`Supabase error ${r.status}: ${t.slice(0, 300)}`);
 }
 
@@ -452,18 +663,20 @@ module.exports = async (req, res) => {
     for (const item of titles.slice(0, 3)) {
       const title = item.title;
       const mediaType = item.mediaType;
+      const tmdbId = item.tmdbId;
 
       debug.currentTitle = title;
 
       let ai;
       try {
         debug.step = "callOpenAI";
-        ai = await callOpenAI({ title });
+        ai = await callOpenAI({ title, mediaType });
       } catch (e) {
         console.log("AI generation failed:", title, e);
         results.push({
           title,
           mediaType,
+          tmdbId,
           skipped: true,
           reason: "openai_failed",
           error: e?.message || String(e),
@@ -480,20 +693,20 @@ module.exports = async (req, res) => {
         poster = await fetchTmdbPoster(title);
       }
 
-      const categories = detectCategories({ title, mediaType });
+      const categories = detectCategories(item);
 
       debug.step = "renderHtml";
       const html = renderHtml({ title, ai, poster });
 
       debug.step = "supabaseUpsert";
-      const saved = await supabaseUpsert({ title, html });
+      const saved = await supabaseUpsert({ title, html, mediaType, tmdbId });
 
       let wpResult = { skipped: true, reason: "duplicate_skip_wp" };
 
       if (saved.saved) {
         debug.step = "postToWordPress";
         wpResult = await postToWordPress({
-          title,
+          title: `${title}を見たい人向け｜配信サービスの探し方とおすすめVOD`,
           html,
           slug: saved.slug,
           poster,
@@ -504,6 +717,7 @@ module.exports = async (req, res) => {
       results.push({
         title,
         mediaType,
+        tmdbId,
         categories,
         ...saved,
         poster,
