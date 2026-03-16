@@ -178,7 +178,7 @@ async function postToWordPress({ title, html, slug, poster, categories }) {
       key,
       title,
       content: html,
-      status: "draft",
+      status: "publish",
       slug,
       featured_image_url: poster || null,
       categories: categories || [],
