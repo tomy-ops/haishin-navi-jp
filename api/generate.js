@@ -1,4 +1,5 @@
 const affiliateLinks = require("../lib/affiliateLinks");
+const { postArticleToX } = require("../lib/xClient");
 
 function slugifyJP(title) {
   return String(title || "")
@@ -588,8 +589,6 @@ module.exports = async (req, res) => {
       });
     }
 
-    const { postArticleToX } = require("../lib/xClient");
-
     let xResult = { skipped: true, reason: "wp_not_published" };
 
     if (wpResult?.ok && wpResult?.wpUrl) {
@@ -598,7 +597,7 @@ module.exports = async (req, res) => {
         url: wpResult.wpUrl,
         imageUrl: poster,
     });
-}
+    }
 
     return res.status(200).json({
       ok: true,
