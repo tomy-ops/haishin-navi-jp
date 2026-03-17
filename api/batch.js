@@ -5,6 +5,7 @@
 // 4) WordPressへ下書き投稿
 
 const affiliateLinks = require("../lib/affiliateLinks");
+const { postArticleToX } = require("../lib/xClient");
 
 function slugifyJP(title) {
   return String(title || "")
