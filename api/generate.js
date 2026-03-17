@@ -576,6 +576,7 @@ module.exports = async (req, res) => {
 
     let wpResult = { skipped: true, reason: "duplicate_skip_wp" };
 
+
     if (saved.saved) {
       debug.step = "postToWordPress";
       wpResult = await postToWordPress({
@@ -587,6 +588,18 @@ module.exports = async (req, res) => {
       });
     }
 
+    const { postArticleToX } = require("../lib/xClient");
+
+    let xResult = { skipped: true, reason: "wp_not_published" };
+
+    if (wpResult?.ok && wpResult?.wpUrl) {
+    xResult = await postArticleToX({
+        title: `${title}を見たい人向け｜配信サービスの探し方とおすすめVOD`,
+        url: wpResult.wpUrl,
+        imageUrl: poster,
+    });
+}
+
     return res.status(200).json({
       ok: true,
       debug,
@@ -597,6 +610,7 @@ module.exports = async (req, res) => {
         ...saved,
         poster,
         wp: wpResult,
+        x: xResult,
       },
     });
   } catch (err) {
@@ -607,3 +621,4 @@ module.exports = async (req, res) => {
     });
   }
 };
+
