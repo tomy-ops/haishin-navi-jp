@@ -1,5 +1,6 @@
 const affiliateLinks = require("../lib/affiliateLinks");
 const { postArticleToX } = require("../lib/xClient");
+const { enqueueXPosts } = require("../lib/xQueue");
 
 function slugifyJP(title) {
   return String(title || "")
@@ -592,8 +593,9 @@ module.exports = async (req, res) => {
     let xResult = { skipped: true, reason: "wp_not_published" };
 
     if (wpResult?.ok && wpResult?.wpUrl) {
-    xResult = await postArticleToX({
+    xResult = await enqueueXPosts({
         title: `${title}を見たい人向け｜配信サービスの探し方とおすすめVOD`,
+        slug: saved.slug,
         url: wpResult.wpUrl,
         imageUrl: poster,
     });
