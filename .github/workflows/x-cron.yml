@@ -1,0 +1,16 @@
+name: Trigger X Post Cron
+
+on:
+  schedule:
+    - cron: "30 22 * * *" # JST 07:30
+    - cron: "15 3 * * *"  # JST 12:15
+    - cron: "30 11 * * *" # JST 20:30
+  workflow_dispatch:
+
+jobs:
+  ping-vercel-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Vercel x-cron endpoint
+        run: |
+          curl -sS "${{ secrets.X_CRON_URL }}"
