@@ -596,8 +596,7 @@ module.exports = async (req, res) => {
     xResult = await enqueueXPosts({
         title: `${title}を見たい人向け｜配信サービスの探し方とおすすめVOD`,
         slug: saved.slug,
-        url: wpResult.wpUrl,
-        imageUrl: poster,
+        url: wpResult.wpUrl
     });
     }
 
