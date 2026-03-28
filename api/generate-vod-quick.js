@@ -23,6 +23,7 @@ function renderVodFullHtml({ title, ai, poster }) {
   <h1>${safeTitle}はどこで見れる？配信サービスの探し方とおすすめVOD</h1>
 
   <p>${nl2brSafe(ai.lead || "")}</p>
+  
 
   <h2>結論：${safeTitle}はどこで探すべき？</h2>
   <p>
