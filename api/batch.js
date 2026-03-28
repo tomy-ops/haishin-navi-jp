@@ -5,7 +5,8 @@
 // 4) WordPressへ下書き投稿
 
 const affiliateLinks = require("../lib/affiliateLinks");
-const { postArticleToX } = require("../lib/xClient");
+const {xpostArticleToX} = require("../lib/xClient");
+const { buildXPostText } = require("./xPostBuilder");
 
 function slugifyJP(title) {
   return String(title || "")
@@ -479,6 +480,8 @@ function renderHtml({ title, ai, poster }) {
   <h1>${safeTitle}を見たい人向け｜配信サービスの探し方とおすすめVOD</h1>
 
   <p>${safeLead}</p>
+  <p>※当ページのリンクには広告が含まれています。</p>
+  <p>本ページの配信情報は2026年3月時点のものです。最新の配信状況（無料・見放題・レンタル等）は各サービスサイトにてご確認ください。</p>
 
   <h2>${safeTitle}を見たい人向けの基本ポイント</h2>
   <p>
